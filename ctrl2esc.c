@@ -2,9 +2,6 @@
 //     gcc ctrl2esc.c -o ctrl2esc -I/usr/include/libevdev-1.0 -levdev -ludev
 // run:
 //     sudo nice -n -20 ./ctrl2esc >ctrl2esc.log 2>ctrl2esc.err &
-// Based on https://gitlab.com/interception/linux/plugins/caps2esc
-// gcc ctrl2esc.c -o ctrl2esc -I/usr/include/libevdev-1.0 -levdev -ludev -std=gnu99
-
 
 #include <stdio.h>
 #include <errno.h>
@@ -33,6 +30,7 @@ leftalt_up        = {.type = EV_KEY, .code = KEY_LEFTALT,    .value = 0},
 rightalt_up       = {.type = EV_KEY, .code = KEY_RIGHTALT,   .value = 0},
 leftshift_up      = {.type = EV_KEY, .code = KEY_LEFTSHIFT,  .value = 0},
 rightshift_up     = {.type = EV_KEY, .code = KEY_RIGHTSHIFT, .value = 0},
+tilde_up          = {.type = EV_KEY, .code = KEY_GRAVE,      .value = 0},
 esc_down          = {.type = EV_KEY, .code = KEY_ESC,        .value = 1},
 ctrl_down         = {.type = EV_KEY, .code = KEY_LEFTCTRL,   .value = 1},
 capslock_down     = {.type = EV_KEY, .code = KEY_CAPSLOCK,   .value = 1},
@@ -40,6 +38,7 @@ leftalt_down      = {.type = EV_KEY, .code = KEY_LEFTALT,    .value = 1},
 rightalt_down     = {.type = EV_KEY, .code = KEY_RIGHTALT,   .value = 1},
 leftshift_down    = {.type = EV_KEY, .code = KEY_LEFTSHIFT,  .value = 1},
 rightshift_down   = {.type = EV_KEY, .code = KEY_RIGHTSHIFT, .value = 1},
+tilde_down        = {.type = EV_KEY, .code = KEY_GRAVE,      .value = 1},
 esc_repeat        = {.type = EV_KEY, .code = KEY_ESC,        .value = 2},
 ctrl_repeat       = {.type = EV_KEY, .code = KEY_LEFTCTRL,   .value = 2},
 capslock_repeat   = {.type = EV_KEY, .code = KEY_CAPSLOCK,   .value = 2},
@@ -47,6 +46,7 @@ leftalt_repeat    = {.type = EV_KEY, .code = KEY_LEFTALT,    .value = 2},
 rightalt_repeat   = {.type = EV_KEY, .code = KEY_RIGHTALT,   .value = 2},
 leftshift_repeat  = {.type = EV_KEY, .code = KEY_LEFTSHIFT,  .value = 2},
 rightshift_repeat = {.type = EV_KEY, .code = KEY_RIGHTSHIFT, .value = 2},
+tilde_repeat      = {.type = EV_KEY, .code = KEY_GRAVE,      .value = 2},
 ev_syn_report     = {.type = EV_SYN, .code = SYN_REPORT,     .value = 0};
 // clang-format on
 
@@ -67,8 +67,9 @@ int eventmap(const struct input_event *input, struct input_event output[]) {
     output[0] = *input;
     num_events = 1;
     if (input->type != EV_KEY);
-    else if (equal(input, &esc_down)) esc_is_down = true;
-    else if (equal(input, &esc_up)) esc_is_down = false;
+    else if (equal(input, &esc_down)) output[0] = tilde_down;
+    else if (equal(input, &esc_up)) output[0] = tilde_up;
+    else if (equal(input, &esc_repeat)) output[0] = tilde_repeat;
     else if (equal(input, &leftalt_down)) leftalt_is_down = true;
     else if (equal(input, &leftalt_up)) leftalt_is_down = false;
     else if (equal(input, &rightalt_down)) rightalt_is_down = true;
